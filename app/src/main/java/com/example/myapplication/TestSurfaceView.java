@@ -4,11 +4,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
 
 public class TestSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
@@ -30,6 +28,7 @@ public class TestSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             this.x = x;
             this.y = y;
             this.rad = 0;
+            prevTime = System.currentTimeMillis()-1000;
         }
 
         public void setRunning(boolean run) {
@@ -42,21 +41,19 @@ public class TestSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             while (runFlag) {
                 long now = System.currentTimeMillis();
                 long elapsedTime = now - prevTime;
-                if (elapsedTime > 60) {
+                if (elapsedTime > 1000) {
                     prevTime = now;
-                    if (x!=-1&&y!=-1) {
+                    if (x != -1 && y != -1) {
                         rad += 5;
                     }
                     canvas = null;
                     try {
                         canvas = surfaceHolder.lockCanvas();
                         canvas.drawColor(Color.BLUE);
-                        synchronized (surfaceHolder) {
-                            Paint cPaint = new Paint();
-                            cPaint.setColor(Color.YELLOW);
-                            if (x != -1 && y != -1)
-                                canvas.drawCircle(x, y, rad, cPaint);
-                        }
+                        Paint cPaint = new Paint();
+                        cPaint.setColor(Color.YELLOW);
+                        canvas.drawCircle(x, y, rad, cPaint);
+
                     } finally {
                         if (canvas != null) {
                             surfaceHolder.unlockCanvasAndPost(canvas);
@@ -83,15 +80,24 @@ public class TestSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-            drawThread.setPos(x, y);
+        int x = (int) event.getX();
+        int y = (int) event.getY();
+        drawThread.setPos(x, y);
 
         return true;
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        Canvas canvas = null;
+        try {
+            canvas = surfaceHolder.lockCanvas();
+            canvas.drawColor(Color.BLUE);
+        } finally {
+            if (canvas != null) {
+                surfaceHolder.unlockCanvasAndPost(canvas);
+            }
+        }
         drawThread = new DrawThread(getHolder());
         drawThread.setRunning(true);
         drawThread.start();
