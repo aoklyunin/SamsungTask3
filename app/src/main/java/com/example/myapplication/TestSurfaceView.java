@@ -41,7 +41,7 @@ public class TestSurfaceView extends SurfaceView implements SurfaceHolder.Callba
             while (runFlag) {
                 long now = System.currentTimeMillis();
                 long elapsedTime = now - prevTime;
-                if (elapsedTime > 1000) {
+                if (elapsedTime >= 1000) {
                     prevTime = now;
                     if (x != -1 && y != -1) {
                         rad += 5;
